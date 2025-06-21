@@ -68,7 +68,7 @@ const Header=async({isAdminPage=false}) => {
             <UserButton
               appearance={{
                 elements:{
-                  avatarBox:"w-15 h-15",
+                  avatarBox:"w-10 h-10",
                 },
               }}
             />
