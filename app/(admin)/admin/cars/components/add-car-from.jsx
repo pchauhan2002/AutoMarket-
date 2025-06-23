@@ -1,6 +1,6 @@
 "use client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,7 +12,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
-import { Upload } from 'lucide-react';
+import {Loader2, Upload, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
+import useFetch from '@/hooks/use-fetch';
+import { addCar } from '@/actions/cars';
+import { useRouter } from 'next/navigation';
+
 
 
 const fuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid", "Plug-in Hybrid"];
@@ -27,8 +33,8 @@ const bodyTypes = [
   "Pickup",
 ];
 const carStatuses = ["AVAILABLE", "UNAVAILABLE", "SOLD"];
-
 const AddCarForm = () => {
+    const router=useRouter();
     const [activeTab,setActiveTab]=useState("ai");
     const[uploadedImages,setUploadedImages]=useState([]);
     const[imageError,setImageError]= useState("");
@@ -77,11 +83,35 @@ const AddCarForm = () => {
       featured: false,
     },
   });
+  const{
+    data:addCarResult,
+    loading: addCarLoading,
+    fn: addCarFn,
+  } =useFetch(addCar);
 
+  useEffect(()=>{
+    if(addCarResult?.sucess){
+      toast.success("Car added sucessfully");
+      router.push("/admin/cars");
+    }
+   },[addCarResult,addCarLoading]); 
+   
   const onSubmit= async(data)=>{
     if(uploadedImages.length===0){
-      setImageError("PLEASE UPLOAD AT LEAST ONE IMAGE")
+      setImageError("PLEASE UPLOAD AT LEAST ONE IMAGE");
+      return;
     }
+    const carData ={
+      ...data,
+      year: parseInt(data.year),
+      price:parseFloat(data.price),
+      mileage: parseInt(data.mileage),
+      seats: data.sets ? parse(data.seats):null,
+    };
+    await addCarFn({
+      carData,
+      images:uploadedImages,
+    })
   };
   const onMultiImagesDrop = (acceptedFiles) => {
     const validFiles = acceptedFiles.filter((file)=>{
@@ -118,6 +148,9 @@ const AddCarForm = () => {
     },
     multiple: true,
   });
+  const removeImage = (index) =>{
+    setUploadedImages((prev)=> prev.filter((_,i)=> i!==index));
+  };
   return (
     <div>
       <Tabs
@@ -400,7 +433,55 @@ const AddCarForm = () => {
                       </div>
                     
                 </div>
+                {imageError && (
+                  <p className="text-xs text-red-500 mt-1">{imageError}</p>
+                )}
+                
               </div> 
+              {uploadedImages.length>0 && (
+                  <div className='mt-4'>
+                    <h3 className='text-sm font-medium mb-2'
+                    >Uploaded ({uploadedImages.length}) Images</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4
+                      lg:grid-cols-5 gap-4">
+                      {uploadedImages.map((image,index)=>{
+                        return (
+                          <div key={index} className='relative group'>
+                          <Image
+                            src={image}
+                            alt={`Car image ${index+1}`}
+                            height={50}
+                            width={50}
+                            className='h-28 w-full object-cover rounded-md'
+                            priority
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0
+                            group-hover:opacity-100 transition-opacity" 
+                            onClick={() => removeImage(index)}
+                          >
+                            <X className="h-3 w-3"/>
+                          </Button>
+                        </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <Button
+                  type="submit"
+                  className={"w-full md:w-auto"}
+                  disabled={addCarLoading}
+                >{addCarLoading ? (
+                  <>
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin'/>Adding
+                    Car...
+                  </>
+                ):(
+                  "ADD CAR")}</Button>
             </form>
           </CardContent>
         </Card>
