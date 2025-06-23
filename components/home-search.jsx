@@ -34,7 +34,7 @@ const HomeSearch = () => {
     }
   };
 
-  const onDrop = (acceptedFiles => {
+  const onDrop = (acceptedFiles) => {
     const file=acceptedFiles[0];
      
     if(file){
@@ -52,12 +52,12 @@ const HomeSearch = () => {
         toast.success("Imager uploaded sucessfully");
       };
       reader.onerror=() => {
-        setIsUploading(fasle);
+        setIsUploading(false);
         toast.error("Failed to read the image");
       };
       reader.readAsDataURL(file);
     }
-  });
+  };
   const {getRootProps, getInputProps, isDragActive ,isDragReject} = useDropzone({
     onDrop,
     accept :{
