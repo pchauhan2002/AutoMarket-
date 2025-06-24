@@ -6,6 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { v4 as uuidv4 } from "uuid";
+
 async function fileToBase64(file){
     const bytes= await file.arrayBuffer();
     const buffer= Buffer.from(bytes);
@@ -89,7 +90,7 @@ export async function processCarImageWithAI(file){
             }
 
             return{
-                sucess:true,
+                success:true,
                 data:carDetails,
             }
         }
@@ -171,7 +172,7 @@ export async function addCar({carData,images}) {
         });
         revalidatePath('/admin/cars')
         return{
-            sucess: true,
+            success: true,
         };
     }
     catch(error){
