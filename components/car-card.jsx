@@ -44,7 +44,14 @@ const CarCard = ({car}) => {
         <div>
             <h3>{car.make}{car.model}</h3>
             <span className="text-x1 font-boold text-blue-600">
-                ${car.price.toLocaleString()}
+                <span className="text-x1 font-bold text-blue-600">
+                {new Intl.NumberFormat("en-IN", {
+                    style: "currency",
+                    currency: "INR",
+                    maximumFractionDigits: 0,
+                }).format(car.price)}
+                </span>
+
             </span>
         </div>
 

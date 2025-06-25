@@ -10,6 +10,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import { formatCurrency } from "@/lib/helper";
+//import { formatCurrency } from "@/lib/utils";
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -183,7 +184,7 @@ const CarsList = () => {
                         {car.make}{car.model}
                       </TableCell>
                       <TableCell>{car.year}</TableCell>
-                      <TableCell>{formatCurrency(car.price)}</TableCell>
+                      <TableCell>car.price</TableCell>
                       <TableCell>{getStatusBadge(car.status)}</TableCell>
                       <TableCell> 
                         <Button
