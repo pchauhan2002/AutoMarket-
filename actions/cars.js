@@ -36,11 +36,12 @@ export async function processCarImageWithAI(file){
       3. Year (approximately)
       4. Color
       5. Body type (SUV, Sedan, Hatchback, etc.)
-      6. Mileage
+      6. Mileage (estimate based on visible cues, or use average mileage based on the car's year/model if not visible)
       7. Fuel type (your best guess)
       8. Transmission type (your best guess)
-      9. Price (your best guess)
-      9. Short Description as to be added to a car listing
+      9. Price (your best guess in USD)
+      10. Number of seats (infer from interior view if visible, otherwise use standard seating for the model)
+      11. Short Description as to be added to a car listing
 
       Format your response as a clean JSON object with these fields:
       {
@@ -50,6 +51,7 @@ export async function processCarImageWithAI(file){
         "color": "",
         "price": "",
         "mileage": "",
+        "seats": "",
         "bodyType": "",
         "fuelType": "",
         "transmission": "",
@@ -60,6 +62,8 @@ export async function processCarImageWithAI(file){
       For confidence, provide a value between 0 and 1 representing how confident you are in your overall identification.
       Only respond with the JSON object, nothing else.
         `;
+
+
         const result=await model.generateContent([ImagePart,prompt]);
         const response=await result.response;
         const text=response.text();
@@ -220,18 +224,16 @@ export async function getCars(search =""){
 }
 export async function deleteCar(id){
     try{
-        const  {userId} =await auth();
-        if(!userId)
-            throw new Error("unauthorized");
-        const user= await db.user.findUnique({
-            where:{id},
-            select:{images:true},
-        });
-
+        const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+    const car = await db.car.findUnique({
+      where: { id },
+      select: { images: true },
+    });
         if(!car){
             return{
                 success: false,
-                error:"Carnot found",
+                error:"Car not found",
             };
         }
 

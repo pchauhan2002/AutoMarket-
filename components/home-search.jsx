@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { Camera, Upload } from 'lucide-react';
 import { Button } from './ui/button';
@@ -7,6 +7,8 @@ import { useDropzone } from 'react-dropzone';
 import { Toaster } from './ui/sonner';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import useFetch from '@/hooks/use-fetch';
+import { processImageSearch } from '@/actions/home';
 
 
 const HomeSearch = () => {
@@ -16,14 +18,19 @@ const HomeSearch = () => {
   const [searchImage,setSearchImage]= useState(null);
   const [isUpLoading, setIsUploading]= useState(false);
   const router=useRouter();
-
+  const{
+    loading:isProcessing,
+    fn: processImageFn,
+    data:processResult,
+    error:processError,
+  }=useFetch(processImageSearch);
+  
   const handleTextSubmit = (e) => {
     e.preventDefault(); // prevents the page from reloading which is its default behaviour
     if(!searchTerm.trim()){
       toast.error("Please enter a search term");
       return;
     }
-
     router.push(`/cars?search=${encodeURIComponent(searchTerm)}`);
   };
   const handleImageSearch =async(e) => {
@@ -32,7 +39,29 @@ const HomeSearch = () => {
       toast.error("Please upload an image first");
       return;
     }
+    await processImageFn(searchImage);
   };
+
+  useEffect(()=>{
+    if(processError){
+      toast.error(
+        "Failed to analuze image"+(processError.message || "Unknown Error")
+    );
+    }
+  },[processError]);
+
+  useEffect(()=>{
+    if(processResult?.success){
+      const params=new URLSearchParams();
+      if(processResult.data.make)
+          params.set("make",processResult.data.make);
+      if(processResult.data.bodyType)
+        params.set("bodytype",processResult.data.bodyTpe);
+      if(processResult.data.color)
+        params.set("color",processResult.data.color);
+      router.push(`/cars?${params.toString()}`);
+    }
+  },[processResult]);
 
   const onDrop = (acceptedFiles) => {
     const file=acceptedFiles[0];
@@ -140,8 +169,12 @@ const HomeSearch = () => {
               <Button 
                 type="submit" 
                 className="w-full mt-2" 
-                disabled={isUpLoading}>
-                {isUpLoading ? "Uploading..." : "Search with this Image"}
+                disabled={isUpLoading || isProcessing}>
+                {isUpLoading 
+                ? "Uploading..." 
+                : isProcessing
+                ? "Analyzing Image..."
+                : "Search with this Image"}
               </Button>)}
           </form>
         </div>

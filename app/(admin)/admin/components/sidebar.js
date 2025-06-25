@@ -16,16 +16,6 @@ const routes =[
         icon: Car,
         href: "/admin/cars",
     },
-    {
-        label:"Test Drives",
-        icon: CalendarRange,
-        href: "/admin/test-drives",
-    },
-    {
-        label : "Settings",
-        icon : Cog,
-        href:"/admin/settings",
-    },
 ];
 const Sidebar = () => {
 
