@@ -1,3 +1,5 @@
+
+"use server"
 import { serializedCarData } from "@/lib/helper";
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
@@ -93,7 +95,7 @@ export async function getCars({
        if(fuelType)
         where.fuelType-{equals:fuelType,mode:"insensitive"};
        if(transmission)
-        where.transmission={equals:transmissioin,mode:"insensitive"};
+        where.transmission={equals:transmission,mode:"insensitive"};
 
         where.price={
             gte:parseFloat(minPrice)||0,
@@ -127,7 +129,7 @@ export async function getCars({
         let wishlisted=new Set();
         if(dbUser){
             const savedCars= await db.userSavedCar.findMany({
-                where:{userId:DevBundlerService.id},
+                where:{userId:dbUser.id},
                 select:{carId:true},
             });
             wishlisted=new Set(savedCars.map((saved)=> saved.carId));
@@ -142,7 +144,7 @@ export async function getCars({
                 total:totalCars,
                 page,
                 limit,
-                pages:Math.cail(totalCars/limit),
+                pages:Math.ceil(totalCars/limit),
             },
         };
     }catch(error){
@@ -168,6 +170,14 @@ export async function toggleSavedCar(carId){
                 error:"Car not found",
             };
         }
+        const existingSave = await db.userSavedCar.findUnique({
+        where: {
+            userId_carId: {
+            userId: user.id,
+            carId,
+            },
+        },
+        });
         if(existingSave){
             await db.userSavedCar.delete({
                 where:{

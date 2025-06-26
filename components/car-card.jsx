@@ -1,27 +1,56 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from './ui/card';
 import Image from 'next/image';
 import { Button } from './ui/button';
-import { Heart } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { useRouter } from 'next/navigation';
+import useFetch from '@/hooks/use-fetch';
+import { toggleSavedCar } from '@/actions/car-listing';
+import { useAuth } from '@clerk/nextjs';
+import { toast } from 'sonner';
 const CarCard = ({car}) => {
-    const[isSaved,setSaved]=useState(car.wishlisted);
-    const handleToggleSave=async(e)=>{};
+    const[isSaved,setIsSaved]=useState(car.wishlisted);
+    const{isSignedIn} =useAuth();
+    const{
+        loading:isToggling,
+        fn:toggleSavedCarFn,
+        data:toggleResult,
+        error:toggleError,
+    }=useFetch(toggleSavedCar);
+
+    useEffect(()=>{
+        if(toggleResult?.success && toggleResult.saved !== isSaved){
+            setIsSaved(toggleResult.saved);
+            toast.success(toggleResult.message);
+        }
+    },[toggleResult,isSaved]);
+
+    const handleToggleSave=async(e)=>{
+        e.preventDefault();
+        if(!isSignedIn){
+            toast.error("please sign in to save cars");
+            router.push("/sign-in");
+            return;
+        }
+        if(isToggling)
+            return;
+        await toggleSavedCarFn(car.id);
+    };
     const router=useRouter()
   return (
   <Card className="overflow-hidden hover:shadow-lg transition group">
     <div className="relative h-48">
         {car.images && car.images.length>0 ? (
             <div className="relative w-full h-full">
-  <Image 
-    src={car.images[0]} 
-    alt={`${car.make} ${car.model}`} 
-    fill
-    className="object-cover group-hover:scale-105 transition duration-300"
-  />
-</div>
+    <Image 
+        src={car.images[0]} 
+        alt={`${car.make} ${car.model}`} 
+        fill
+        className="object-cover group-hover:scale-105 transition duration-300"
+    />
+    </div>
         ):(
             <div></div>
         )}
@@ -37,7 +66,11 @@ const CarCard = ({car}) => {
             }`}
         onClick={handleToggleSave}
     >
-        <Heart className={isSaved ? "fill-current" :""} size={20}/>   
+        {isToggling ?(
+            <Loader2 className='h-4 w-4 animate-spin'/>
+        ):(
+            <Heart className={isSaved ? "fill-current" :""} size={20}/>   
+        )}
     </Button>
     </div>
     <CardContent className="p-4">

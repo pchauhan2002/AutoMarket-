@@ -9,8 +9,8 @@ import { checkUser } from '@/lib/checkUser';
 
 const Header=async({isAdminPage=false}) => {
   const user= await checkUser();
-  const isAdmin =(user.role==="ADMIN");//user.role === "ADMIN";
-
+  const isAdmin =(user?.role==="ADMIN");//user.role === "ADMIN";
+  //const isAdmin=true;
   return(
     <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b">
       <nav className="mx-auto px py-4 flex items-center justify-between">
