@@ -20,15 +20,22 @@ const CarCard = ({car}) => {
         error:toggleError,
     }=useFetch(toggleSavedCar);
 
-    useEffect(()=>{
-        if(toggleResult?.success && toggleResult.saved !== isSaved){
-            setIsSaved(toggleResult.saved);
-            toast.success(toggleResult.message);
+     useEffect(() => {
+        if (toggleResult?.success && toggleResult.saved !== isSaved) {
+        setIsSaved(toggleResult.saved);
+        toast.success(toggleResult.message);
         }
-    },[toggleResult,isSaved]);
+    }, [toggleResult, isSaved]);
+    useEffect(() => {
+        if (toggleError) {
+        toast.error("Failed to update favorites");
+        }
+    }, [toggleError]);
 
+    
     const handleToggleSave=async(e)=>{
         e.preventDefault();
+        e.stopPropagation();
         if(!isSignedIn){
             toast.error("please sign in to save cars");
             router.push("/sign-in");

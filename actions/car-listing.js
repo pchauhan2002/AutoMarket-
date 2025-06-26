@@ -212,3 +212,40 @@ export async function toggleSavedCar(carId){
         throw new Error("Error toggling saved cars"+error.message);
     }
 }
+export async function getSavedCars(){
+    try{
+        const{userId}=await auth();
+        if(!userId)
+            throw new Error("Unauthorized");
+        const user=await db.user.findUnique({
+            where:{clerkUserId:userId},
+        });
+        if(!user){
+            return{
+                success:false,
+                error:"User not found",
+            };
+        }
+        const savedCars=await db.userSavedCar.findMany({
+            where:{userId:user.id,},
+            include:{
+                car:true,
+            },
+            orderBy:{
+                savedAt:"desc",
+            },
+        });
+        const cars=savedCars.map((saved)=>serializedCarData(saved.car));
+        return{
+            success:true,
+            data:cars,
+        };
+    }
+    catch(error){
+        console.error("Error fetching saved cars",error);
+        return{
+            success:false,
+            error:error.message,
+        };
+    }
+}
