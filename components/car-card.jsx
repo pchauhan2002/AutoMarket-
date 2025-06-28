@@ -20,7 +20,7 @@ const CarCard = ({car}) => {
         error:toggleError,
     }=useFetch(toggleSavedCar);
 
-     useEffect(() => {
+    useEffect(() => {
         if (toggleResult?.success && toggleResult.saved !== isSaved) {
         setIsSaved(toggleResult.saved);
         toast.success(toggleResult.message);
@@ -116,7 +116,7 @@ const CarCard = ({car}) => {
             <div className='flex justify-between'>
                 <Button 
                     className=""
-                    onClick={()=> router.push(`/cars/{${car.id}}`)}
+                    onClick={()=> router.push(`/cars/${car.id}`)}
                 >
                     View Car
                 </Button>
